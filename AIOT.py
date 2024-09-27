@@ -19,14 +19,16 @@ cap.set(3, 640)  # Set width
 cap.set(4, 320)  # Set height
 
 # Load YOLO model
-model = YOLO("testt.pt")
+model = YOLO("data.pt")
 
 # Define object classes
 classNames = ["Junior", "Punyee", 'Tonfah']
 
-# Variables to keep track of the last published state and count
+# Variables to keep track of the last published state and counts
 last_detected_class = None
 count = 0
+no_object_count = 0  # Counter for no objects detected
+no_object_threshold = 50  # Threshold to publish no objects detected message
 
 while True:
     success, img = cap.read()
@@ -85,7 +87,7 @@ while True:
             cv2.putText(img, class_name, org, font, fontScale, color, thickness)
 
     # Check if count is greater than or equal to 100 before sending to MQTT
-    if detected_objects and count >= 100:
+    if detected_objects and count >= 50:
         mqtt_message = last_detected_class
         mqtt_message_json = json.dumps(mqtt_message)
 
@@ -99,6 +101,26 @@ while True:
 
         # Reset count after publishing
         count = 0
+    elif not detected_objects:
+        no_object_count += 1  # Increment no object counter
+        if no_object_count >= no_object_threshold:  # Check threshold
+            # Publish a message indicating that no objects were detected
+            mqtt_message = "No objects detected"
+            mqtt_message_json = json.dumps(mqtt_message)
+
+            # Publish to MQTT broker
+            result = client.publish(mqtt_topic, mqtt_message_json)
+            status = result[0]
+            if status == 0:
+                print(f"MQTT message sent: {mqtt_message_json}")
+            else:
+                print(f"Failed to send message to topic {mqtt_topic}")
+
+            # Reset no object count after publishing
+            no_object_count = 0
+    else:
+        # Reset no object count if objects are detected
+        no_object_count = 0
 
     # Display the resulting frame
     cv2.imshow('Webcam', img)
