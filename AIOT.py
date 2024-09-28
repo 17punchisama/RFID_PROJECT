@@ -7,7 +7,7 @@ import json
 # Initialize MQTT client
 mqtt_broker = "broker.hivemq.com"  # Replace with your MQTT broker
 mqtt_port = 1883  # Default MQTT port
-mqtt_topic = "zerotohero/esl/punyee"
+mqtt_topic = "zerotohero/esl/punyee/only"
 
 client = mqtt.Client()
 client.connect(mqtt_broker, mqtt_port, 60)
@@ -28,7 +28,7 @@ classNames = ["Junior", "Punyee", 'Tonfah']
 last_detected_class = None
 count = 0
 no_object_count = 0  # Counter for no objects detected
-no_object_threshold = 50  # Threshold to publish no objects detected message
+no_object_threshold = 5  # Threshold to publish no objects detected message
 
 while True:
     success, img = cap.read()
@@ -84,10 +84,11 @@ while True:
             fontScale = 0.5
             color = (255, 0, 0)
             thickness = 1
-            cv2.putText(img, class_name, org, font, fontScale, color, thickness)
+            if confidence > 0.89 :
+                cv2.putText(img, class_name, org, font, fontScale, color, thickness)
 
     # Check if count is greater than or equal to 100 before sending to MQTT
-    if detected_objects and count >= 50:
+    if detected_objects and count >= 5:
         mqtt_message = last_detected_class
         mqtt_message_json = json.dumps(mqtt_message)
 

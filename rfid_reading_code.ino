@@ -14,8 +14,8 @@ String rfidUID = "";  // Variable to store the RFID UID
 WiFiClient espClient;                     // Create WiFi client
 PubSubClient client(espClient);           // Create MQTT client
 //=================================================================================================
-const char* ssid = "wifi_name";             // WiFi name
-const char* password = "wifi_password";       // WiFi password
+const char* ssid = "VLY";             // WiFi name
+const char* password = "14122550";       // WiFi password
 //=================================================================================================
 const char* mqtt_broker = "broker.hivemq.com";  // IP of MQTT server
 const int mqtt_port = 1883;                // Port of MQTT server
@@ -70,7 +70,7 @@ void setup() {
   rfid.PCD_Init();  // Initiate MFRC522
   setup_wifi(); // Connect to WiFi
   reconnect();  // Connect to MQTT
-  client.subscribe("topic"); // Subscribe to topic
+  client.subscribe("ESL/rfid/sub"); // Subscribe to topic
   
   Serial.println("Place your card/tag near the RFID reader...");
 }
@@ -106,5 +106,5 @@ void loop() {
 
   delay(1000);
 
-  client.publish("topic", rfidUID.c_str());
+  client.publish("ESL/rfid/punyee", rfidUID.c_str());
 }
